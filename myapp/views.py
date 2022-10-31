@@ -33,12 +33,20 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from .s3upload import *
 from django.template import RequestContext
-
-
+import os
 
 def logout_view(request):
 	logout(request)
 	return redirect('/')
+	
+def download_view(request, username, filename):
+	key = username + "/" + filename
+	download_from_s3_bucket("seng4620bucket", key,"Users/username/documents/" + filename)
+	userfiles,totalsize = getuserfiles('seng4620bucket', username)
+	limit=5000
+	percentused = totalsize*100/limit
+	return render(request,'index.html',{'username':username,'userfiles': userfiles,'totalsize':totalsize,'limit':limit,'percentused':percentused})
+
       
 
 @login_required
@@ -77,8 +85,8 @@ def handle_uploaded_file(f,username):
 
 
 @login_required
-def delete_view(request,filename):
-	username = request.user.username
+def delete_view(request,filename, username):
+	#username = request.user.username
 	delete_from_s3('seng4620bucket', username,filename)
 	userfiles,totalsize = getuserfiles('seng4620bucket', username)
 	limit=5000

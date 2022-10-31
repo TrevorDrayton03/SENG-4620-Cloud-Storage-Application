@@ -26,12 +26,19 @@ import os
 import boto3.s3
 
 conn = boto3.resource('s3')
+
+# conn = boto.connect_s3(aws_access_key_id='<enter>',
+#      aws_secret_access_key='<enter>')
      
      #conn = boto3.resource('s3',aws_access_key_id='<enter>',
      #aws_secret_access_key='<enter>')
 
 def percent_cb(complete, total):
     print ('.')
+
+def download_from_s3_bucket(bucketname, filename, filepath):
+	s3 = boto3.client('s3')
+	s3.download_file(bucketname, filename, filepath)
 
 def upload_to_s3_bucket_path(bucketname, path, filename):
 	mybucket = conn.Bucket(bucketname)
@@ -55,7 +62,7 @@ def getuserfiles(bucketname,username):
 		value=[]
 		#value.append(key.name)
 		filename = key.key
-		filename=filename.replace(username+'/media/','') #this does not appear to change the filename
+		#filename=filename.replace(username+'/media/','') #this does not appear to change the filename
 		value.append(key.last_modified)
 		keysize = float(key.size)/1000.0
 		value.append(str(keysize))
@@ -65,6 +72,7 @@ def getuserfiles(bucketname,username):
 	return userfiles,totalsize
 
 def delete_from_s3(bucketname, username,filename):
-	mybucket = conn.Bucket(bucketname)
-	mybucket.delete_key(username+'/media/'+filename)
+	#mybucket = conn.Bucket(bucketname)
+	key = username+"/"+filename
+	conn.Object(bucketname, key).delete()
 
